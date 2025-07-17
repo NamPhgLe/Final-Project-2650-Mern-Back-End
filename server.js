@@ -4,9 +4,28 @@ const express = require('express');
 const cors = require("cors");
 const cookieParser = require('cookie-parser');
 const memberController = require(`./controllers/memberController`)
-const app = express();
 
 require('dotenv').config();
+
+const app = express();
+const isProduction = process.env.NODE_ENV === 'production';
+
+const rawOrigins = (process.env.ALLOWED_ORIGINS || '').split(',').map(s => s.trim()).filter(Boolean);
+const allowedOrigins = isProduction
+    ? rawOrigins.filter(o => o.includes('.vercel.app'))
+    : rawOrigins.filter(o => o.includes('localhost'));
+
+const corsOptions = {
+    origin(origin, callback) {
+        if (!origin) return callback(null, true);
+        if (allowedOrigins.includes(origin)) {
+            return callback(null, true);
+        }
+        return callback(new Error('Not allowed by CORS'), false);
+    },
+    credentials: true,
+};
+
 
 // MongoDB connection
 mongoose.connect(process.env.URI, {
@@ -19,15 +38,12 @@ mongoose.connect(process.env.URI, {
 // Express setup
 app.use(express.json());
 app.use(cookieParser());
-app.use(cors({
-    origin: "https://final-project-2650-mern-front-end.vercel.app",
-    credentials: true
-}));
+app.use(cors(corsOptions));
 
 
-app.use('/api/member', memberController); 
+app.use('/api/member', memberController);
 
 // Start the server
-app.listen(5000, () => {
+app.listen(process.env.PORT || 5000, () => {
     console.log("App is running on port 5000");
 });

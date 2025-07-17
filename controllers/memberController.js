@@ -2,9 +2,12 @@ const express = require("express");
 const bcrypt = require("bcrypt");
 const { MongoClient } = require("mongodb");
 const user = require(`${__dirname}/../models/user`);
-
 const memberController = express.Router();
 const jwt = require('jsonwebtoken')
+
+const isProduction = process.env.NODE_ENV === 'production';
+
+
 require('dotenv').config();
 
 //token generation
@@ -79,9 +82,9 @@ memberController.post('/signup', async (req, res) => {
 
     res.cookie('jwt', token, {
         httpOnly: true,
-        secure: true,
+        secure: isProduction,
         maxAge: 3600000,
-        sameSite: 'none',
+        sameSite: isProduction ? 'none' : 'lax',
     });
 
     res.status(200).json({
@@ -123,9 +126,9 @@ memberController.post('/signin', async (req, res) => {
     const token = generateToken({email: member.email})
     res.cookie('jwt', token, {
         httpOnly: true,
-        secure: true,
-        maxAge: 3600000, 
-        sameSite: 'none',
+        secure: isProduction,
+        maxAge: 3600000,
+        sameSite: isProduction ? 'none' : 'lax',
     })
     res.status(200).json({
         success: `${member.email} logged in successfully!`,
@@ -133,12 +136,14 @@ memberController.post('/signin', async (req, res) => {
     });
 });
 
+
 // logout Route
 memberController.post('/signout', (req, res) => {
+    
     res.clearCookie('jwt', {
         httpOnly: true,
-        secure: true,
-        sameSite: 'none',
+        secure: isProduction,
+        sameSite: isProduction ? 'none' : 'lax',
       });
 
       res.status(200).json({
