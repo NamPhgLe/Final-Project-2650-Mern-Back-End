@@ -81,7 +81,7 @@ memberController.post('/signup', async (req, res) => {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
         maxAge: 3600000,
-        sameSite: 'lax',
+        sameSite: 'none',
     });
 
     res.status(200).json({
@@ -125,7 +125,7 @@ memberController.post('/signin', async (req, res) => {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
         maxAge: 3600000, 
-        sameSite: 'lax',
+        sameSite: 'none',
     })
     res.status(200).json({
         success: `${member.email} logged in successfully!`,
@@ -138,7 +138,7 @@ memberController.post('/signout', (req, res) => {
     res.clearCookie('jwt', {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
-        sameSite: 'lax',
+        sameSite: 'none',
       });
 
       res.status(200).json({
