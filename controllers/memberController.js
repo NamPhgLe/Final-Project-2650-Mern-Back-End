@@ -79,7 +79,7 @@ memberController.post('/signup', async (req, res) => {
 
     res.cookie('jwt', token, {
         httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
+        secure: true,
         maxAge: 3600000,
         sameSite: 'none',
     });
@@ -123,7 +123,7 @@ memberController.post('/signin', async (req, res) => {
     const token = generateToken({email: member.email})
     res.cookie('jwt', token, {
         httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
+        secure: true,
         maxAge: 3600000, 
         sameSite: 'none',
     })
@@ -137,7 +137,7 @@ memberController.post('/signin', async (req, res) => {
 memberController.post('/signout', (req, res) => {
     res.clearCookie('jwt', {
         httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
+        secure: true,
         sameSite: 'none',
       });
 
