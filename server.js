@@ -20,7 +20,7 @@ mongoose.connect(process.env.URI, {
 app.use(express.json());
 app.use(cookieParser());
 app.use(cors({
-    origin: 'http://localhost:5173',
+    origin: "https://final-project-2650-mern-front-end.vercel.app",
     credentials: true
 }));
 
