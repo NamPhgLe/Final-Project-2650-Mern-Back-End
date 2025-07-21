@@ -11,7 +11,7 @@ const isProduction = process.env.NODE_ENV === 'production';
 require('dotenv').config();
 
 //token generation
-function generateToken(payload){
+function generateToken(payload) {
     return jwt.sign(payload, process.env.JWT_SECRET, {
         expiresIn: process.env.JWT_EXPIRES_IN || '1h'
     });
@@ -20,16 +20,16 @@ function generateToken(payload){
 //authenticate check
 function authenticateToken(req, res, next) {
     const token = req.cookies.jwt;
-  
+
     if (!token) return res.sendStatus(401);
-  
+
     jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
-      if (err) return res.sendStatus(403);
-  
-      req.user = user;
-      next();
+        if (err) return res.sendStatus(403);
+
+        req.user = user;
+        next();
     });
-  }
+}
 
 // protected 
 memberController.get('/protected', authenticateToken, (req, res) => {
@@ -78,7 +78,7 @@ memberController.post('/signup', async (req, res) => {
 
     await collection.insertOne(newMember);
 
-    const token = generateToken({email});
+    const token = generateToken({ email });
 
     res.cookie('jwt', token, {
         httpOnly: true,
@@ -107,7 +107,7 @@ memberController.post('/signin', async (req, res) => {
         });
     }
 
-    const query = email ? {email} : {username};
+    const query = email ? { email } : { username };
     const member = await collection.findOne(query);
 
     if (!member) {
@@ -123,7 +123,7 @@ memberController.post('/signin', async (req, res) => {
         });
     }
 
-    const token = generateToken({email: member.email})
+    const token = generateToken({ email: member.email })
     res.cookie('jwt', token, {
         httpOnly: true,
         secure: isProduction,
@@ -139,15 +139,32 @@ memberController.post('/signin', async (req, res) => {
 
 // logout Route
 memberController.post('/signout', (req, res) => {
-    
+
     res.clearCookie('jwt', {
         httpOnly: true,
         secure: isProduction,
         sameSite: isProduction ? 'none' : 'lax',
-      });
+    });
 
-      res.status(200).json({
+    res.status(200).json({
         success: 'logged out successfully.'
+    });
+});
+
+//profile
+memberController.get('/profile', authenticateToken, async (req, res) => {
+    const collection = client.db().collection('members');
+    const email = req.user.email;
+
+    const member = await collection.findOne({ email }, { projection: { hashedPassword: 0 } });
+
+    if (!member) {
+        return res.status(404).json({ error: "User not found" });
+    }
+
+    res.status(200).json({
+        success: true,
+        profile: member
     });
 });
 
