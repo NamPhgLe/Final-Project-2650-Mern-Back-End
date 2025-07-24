@@ -12,19 +12,23 @@ const allowedOrigins = isProduction
   ? rawOrigins.filter(o => o.includes('.vercel.app'))
   : rawOrigins.filter(o => o.includes('localhost'));
 
+
 const corsOptions = {
   origin(origin, callback) {
     if (!origin) return callback(null, true);
-    if (allowedOrigins.includes(origin)) return callback(null, true);
+    const isAllowedOrigin = allowedOrigins.includes(origin) || (origin && origin.endsWith('.vercel.app'));
+    if (isAllowedOrigin) return callback(null, true);
+    console.error('CORS blocked for origin:', origin);
     return callback(new Error('Not allowed by CORS'), false);
   },
   credentials: true,
 };
 
+app.use(cors(corsOptions));
 app.use(express.json());
 app.use(cookieParser());
-app.use(cors(corsOptions));
 
 app.use('/api/member', memberController);
+
 
 module.exports = app;
